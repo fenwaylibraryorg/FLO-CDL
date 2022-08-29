@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('css'); ?>
+    <script>
+    async function GetTextbook(course) 
+    {
+    
+    google.script.run.withSuccessHandler(function(ar) 
+    {
+
+    console.log(ar);
+    
+    textbook.length = 0;
+    
+    let option = document.createElement("option");
+    option.value = "";
+    option.text = "";
+    textbook.appendChild(option);
+    
+    ar.forEach(function(item, index) 
+    {    
+      let option = document.createElement("option");
+      option.value = item;
+      option.text = item;
+      textbook.appendChild(option);    
+    });
+    
+    }).getTextbook(course);
+    
+    };
+
+
+  </script>  
+  </head>
+  <body>
+    <h1>FLO CDL Demo</h1>
+    <?var url = getUrl();?>
+    <form method="post" action="<?= url ?>" >
+      
+      <label >Name</label><br>
+      <input type="text" name="name" required maxlength="50"/><br><br>
+      <label required >Student ID</label><br>
+      <input name="studentid" type="number" required/><br><br>
+
+      <label  >Course</label><br>
+      <select name="course" id="course" onchange="GetTextbook(this.value)" >
+      <option value="" ></option>
+      <? for(var i = 0; i < course.length; i++) { ?>      
+      <option value="<?= course[i] ?>" ><?= course[i] ?></option>
+      <? } ?>
+      </select><br><br>
+      <label >Textbook</label><br>
+      <select name="textbook" id="textbook">
+      </select><br><br>
+
+      <input type="submit" name="submitButton" id="submitButton" value="Submit"/> 
+      </br></br><div id="message" ><?= message ?></div>
+      </br></br><table id="item_table"><?!= new_table ?></table>    
+    </form>
+  </body>
+</html>
