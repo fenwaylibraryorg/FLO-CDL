@@ -1,6 +1,25 @@
-// GLOBAL VARIABLES DEFINED
-var folderOfScans = '18k3iEhXkS49tcKXWUqi_Fql1fzfwQZzf'; // change FolderID to where scanned documents are located
-var shReserves = SpreadsheetApp.getActive().getSheetByName('Reserves'); // NAME OF SHEET CONTAINING LIST OF ITEMS ON E-RESERVE
+/////////////////////////////////////////////////////////////
+// GLOBAL VARIABLES DEFINED BELOW
+//
+// Note that linking to items directly by URL (from within the OPAC, for example)
+//   can be done with the deployment URL followed by: ?barcode= and then the barcode
+//   for example: https://script.google.com/a/macros.../exec?barcode=123456789
+
+// Change FolderID to where scanned documents are located
+//   which can be found by selecting "getfolderid" above and click Run
+var folderOfScans = '1ROYjGhNoqh9-dVPhKUlo73ePNO4FfTzD'; 
+
+// LOAN LENGTH IN HOURS
+var loanLength = 2;
+
+// URL FOR REQUESTING RESERVES: this is the Web App URL (Deployment URL)
+var formURL = 'https://script.google.com/a/macros/hcc.edu/s/AKfycbxFPjfiDHGE5MGLhUiXKuRHnLy1-l55kp5oz6qO14Ai_wpJ16FrSIBe7SaPYQ-dLEE7-w/exec';
+
+// NAME OF SHEET CONTAINING LIST OF ITEMS ON E-RESERVE
+//    No change needed unless the sheet is renamed
+var shReserves = SpreadsheetApp.getActive().getSheetByName('Reserves'); 
+
+/////////////////////////////////////////////////////////////
 
 
 function getfolderid() { //get ID of folder by name - 7/27/22 JR
@@ -18,7 +37,26 @@ function doGet(e) {
   htmlOutput.new_table ='';
   htmlOutput.course = course;
 
-  return htmlOutput.evaluate();
+  var itemBarcode = e.parameter.barcode;
+  if (itemBarcode) {
+    itemBarcode = itemBarcode.toString();
+  }
+
+  var item_title = getTitle(itemBarcode); //Grab item barcode
+
+  // IF BARCODE PARAMETER, SEND THAT HTML PAGE, OTHERWISE SEND USER GENERAL REQUEST PAGE
+  if (itemBarcode === undefined || itemBarcode === null)  {
+    return htmlOutput.evaluate();
+  
+  } else {
+
+    // IF BARCODE IS DEFINED, PROCESS SPECIFIC ITEM
+    var itemOutput =  HtmlService.createTemplateFromFile('RequestByBarcode');
+    itemOutput.itembarcode = itemBarcode; //Pass on item barcode
+    itemOutput.itemtitle = item_title; // Pass on item title
+    return itemOutput.evaluate(); 
+  }
+
 }
 
 //import css to DependentSelect.html - added 7/8/22 JR
@@ -39,19 +77,35 @@ function doPost(e) {
   Logger.log(JSON.stringify(e)); //Log transaction 
   var name = e.parameters.name.toString(); //Convert name to string
   var studentid = e.parameters.studentid.toString(); //Convert student ID to string
-  var course = e.parameters.course.toString(); //Convert course name to string
-  var textbook = e.parameters.textbook.toString(); //Convert textbook (PDF) name to string
-  var email = Session.getActiveUser().getEmail();  // Log the email address of the person running the script.
+ var email = Session.getActiveUser().getEmail();  // Log the email address of the person running the script.
   const now = new Date(); //Create a date object for the current date and time 
-
 
   var barcode;
   var item_url;
   var array_temp = [];
-  array_temp = getBarcodeAndUrlAndId(course, textbook); //Store getBarcodeAndUrl function output in an array
-  barcode = array_temp[0]; //Grab item barcode
-  item_id = array_temp[1]; //Grab item ID -- Added 6/7/22 EL 
-  item_url = array_temp[2]; //Grab item (PDF) URL
+
+  var itemBarcode = e.parameter.barcode;
+  itemBarcode = itemBarcode.toString();
+  if (itemBarcode === undefined || itemBarcode === null)  {
+    // NO BARCODE FOUND IN POST SO TREAT AS A COURSE REQUEST
+    var course = e.parameters.course.toString(); //Convert course name to string
+    var textbook = e.parameters.textbook.toString(); //Convert textbook (PDF) name to string
+    array_temp = getBarcodeAndUrlAndId(course, textbook); //Store getBarcodeAndUrl function output in an array
+    barcode = array_temp[0]; //Grab item barcode
+    item_id = array_temp[1]; //Grab item ID -- Added 6/7/22 EL 
+    item_url = array_temp[2]; //Grab item (PDF) URL
+    
+  } else {
+    // BARCODE FOUND IN POST SO TREAT AS A DIRECT REQUEST FROM OPAC
+    barcode = itemBarcode;
+    var course = 'direct_request';
+    var textbook;
+    array_temp = getUrlAndId(barcode); //Store getBarcodeAndUrl function output in an array
+    textbook = array_temp[0]; //Grab item barcode
+    item_id = array_temp[1]; //Grab item ID -- Added 6/7/22 EL 
+    item_url = array_temp[2]; //Grab item (PDF) URL
+
+  }
   
   /* SET LOAN DATE */
   var date_loan;
@@ -150,6 +204,23 @@ function getBarcodeAndUrlAndId(course, textbook) {
   return return_array; 
 }
 
+//Get item textbook, ID, and URL from barcode
+function getUrlAndId(barcode) { 
+  var getLastRow = shReserves.getLastRow();
+  var return_array = [];
+  for(var i = 2; i <= getLastRow; i++) //Iterate through rows of the "Reserves" spreadsheet 
+  {
+      if(shReserves.getRange(i, 3).getValue().toString() === barcode) { //If row one contains barcode
+          return_array.push(textbook_temp = shReserves.getRange(i, 2).getValue()); //Grab textbook / title
+          return_array.push(id_temp = shReserves.getRange(i, 4).getValue()); //Grab item ID from row 4 -- Added 6/7/22 EL 
+          return_array.push(url_temp = shReserves.getRange(i, 5).getValue()); //Grab PDF URL from row 5 
+      }
+  }
+  return return_array; 
+}
+
+
+
 //Get loan & expiration dates for given item barcode - updated to add textbook 7/29/22 JR
 function getLoanDate(barcode, textbook) {
   var ssInUse = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("InUse"); // Grab "InUse" spreadsheet
@@ -199,11 +270,26 @@ function AddRecord(name, studentid, course, textbook, email, barcode, item_id, i
   
 }
 
+//Get textbook (PDF) name for a given barcode from the "Reserves" spreadsheet
+function getTitle(itemBarcode) { 
+  var getLastRow = shReserves.getLastRow();
+  var item_title;
+  for(var i = 2; i <= getLastRow; i++) //Iterate through rows of the "Reserves" spreadsheet
+  {
+      if(shReserves.getRange(i, 3).getValue().toString() === itemBarcode) { //If column 3 matches barcode
+        item_title = shReserves.getRange(i, 2).getValue(); //Grab textbook name(s) from row 2 
+      }
+  }
+  return item_title;  
+}
+
+
+
 //---------SHARE FILE--------
 function FileShare(email, item_id, loan_status, date_expire) {
   if(loan_status === 'Active'){
     try{
-      var customMessage = "This PDF loan will expire in 3 hours. Please re-request this title if you need more time.";  // Please set the custom message here.
+      var customMessage = "This PDF loan will expire in "+loanLength+" hours. Please re-request this title if you need more time.";  // Please set the custom message here.
       var resource = {role: "reader", type: "user", value: email};
       Drive.Permissions.insert(resource, item_id, {emailMessage: customMessage});
       }
