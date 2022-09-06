@@ -142,7 +142,7 @@ function doPost(e) {
   else if (loan_status === 'Active') {//create table for loaned item with expiration date
     const options = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'}
     let date_expire = new Date ();
-    date_expire.setHours(date_expire.getHours() + 3);
+    date_expire.setHours(date_expire.getHours() + loanLength);
     //date_expire.setMinutes(date_expire.getMinutes() + 15);
     var day = date_expire.toLocaleDateString(undefined, options);
     var time = date_expire.toLocaleTimeString();
