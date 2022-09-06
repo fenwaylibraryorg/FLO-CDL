@@ -85,7 +85,11 @@ function doPost(e) {
   var array_temp = [];
 
   var itemBarcode = e.parameter.barcode;
-  itemBarcode = itemBarcode.toString();
+  
+  if (itemBarcode) {
+    itemBarcode = itemBarcode.toString();
+  }
+    
   if (itemBarcode === undefined || itemBarcode === null)  {
     // NO BARCODE FOUND IN POST SO TREAT AS A COURSE REQUEST
     var course = e.parameters.course.toString(); //Convert course name to string
