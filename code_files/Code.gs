@@ -23,7 +23,7 @@ var shReserves = SpreadsheetApp.getActive().getSheetByName('Reserves');
 
 
 function getfolderid() { //get ID of folder by name - 7/27/22 JR
-Logger.log(DriveApp.getFoldersByName('CDL Files').next().getId());
+  Logger.log(DriveApp.getFoldersByName('CDL Files').next().getId());
 }
 
 //-----REQUEST FORM FUNCTIONALITY-------
@@ -35,28 +35,40 @@ function doGet(e) {
   var course = getCourse();
   htmlOutput.message = '';
   htmlOutput.new_table ='';
+  htmlOutput.incorrect_barcode_message = '';
   htmlOutput.course = course;
 
-  var itemBarcode = e.parameter.barcode;
-  if (itemBarcode) {
-    itemBarcode = itemBarcode.toString();
-  }
-
-  var item_title = getTitle(itemBarcode); //Grab item barcode
-
-  // IF BARCODE PARAMETER, SEND THAT HTML PAGE, OTHERWISE SEND USER GENERAL REQUEST PAGE
-  if (itemBarcode === undefined || itemBarcode === null)  {
-    return htmlOutput.evaluate();
+  var barcode = e.parameter.barcode;
   
-  } else {
-
+  // IF BARCODE PARAMETER, SEND THAT HTML PAGE, OTHERWISE SEND USER GENERAL REQUEST PAGE
+  if (barcode) {
     // IF BARCODE IS DEFINED, PROCESS SPECIFIC ITEM
+    barcode = barcode.toString();
+
+    var barcode_test = checkBarcode(barcode);
+    if (barcode_test !== 'yes') {
+      // CANNOT FIND TEXTBOOK BASED ON BARCODE SO ASK USER TO SELECT ITEM MANUALLY
+      var htmlOutput =  HtmlService.createTemplateFromFile('DependentSelect');
+      var course = getCourse();
+      htmlOutput.message = '';
+      htmlOutput.new_table ='';
+      htmlOutput.course = course;
+      // Incorrect barcode requested
+      var incorrect_barcode_message = 'That barcode, '+barcode+' is incorrect. Please select the reserve item from the menu below.';
+      htmlOutput.incorrect_barcode_message = incorrect_barcode_message;
+      return htmlOutput.evaluate();
+    }
+
+
+    var item_title = getTitle(barcode); //Grab item barcode
     var itemOutput =  HtmlService.createTemplateFromFile('RequestByBarcode');
-    itemOutput.itembarcode = itemBarcode; //Pass on item barcode
+    itemOutput.itembarcode = barcode; //Pass on item barcode
     itemOutput.itemtitle = item_title; // Pass on item title
     return itemOutput.evaluate(); 
+  
+  } else {
+    return htmlOutput.evaluate();
   }
-
 }
 
 //import css to DependentSelect.html - added 7/8/22 JR
@@ -77,31 +89,33 @@ function doPost(e) {
   Logger.log(JSON.stringify(e)); //Log transaction 
   var name = e.parameters.name.toString(); //Convert name to string
   var studentid = e.parameters.studentid.toString(); //Convert student ID to string
- var email = Session.getActiveUser().getEmail();  // Log the email address of the person running the script.
+  var email = Session.getActiveUser().getEmail();  // Log the email address of the person running the script.
   const now = new Date(); //Create a date object for the current date and time 
 
-  var barcode;
+//  var barcode;
   var item_url;
   var array_temp = [];
-
-  var itemBarcode = e.parameter.barcode;
+  var barcode = e.parameter.barcode;
   
-  if (itemBarcode) {
-    itemBarcode = itemBarcode.toString();
-  }
-    
-  if (itemBarcode === undefined || itemBarcode === null)  {
-    // NO BARCODE FOUND IN POST SO TREAT AS A COURSE REQUEST
-    var course = e.parameters.course.toString(); //Convert course name to string
-    var textbook = e.parameters.textbook.toString(); //Convert textbook (PDF) name to string
-    array_temp = getBarcodeAndUrlAndId(course, textbook); //Store getBarcodeAndUrl function output in an array
-    barcode = array_temp[0]; //Grab item barcode
-    item_id = array_temp[1]; //Grab item ID -- Added 6/7/22 EL 
-    item_url = array_temp[2]; //Grab item (PDF) URL
-    
-  } else {
+
+    if (barcode) {
     // BARCODE FOUND IN POST SO TREAT AS A DIRECT REQUEST FROM OPAC
-    barcode = itemBarcode;
+    barcode = barcode.toString();
+
+    var barcode_test = checkBarcode(barcode);
+    if (barcode_test !== 'yes') {
+      // CANNOT FIND TEXTBOOK BASED ON BARCODE SO ASK USER TO SELECT ITEM MANUALLY
+      var htmlOutput =  HtmlService.createTemplateFromFile('DependentSelect'); 
+      var course = getCourse();
+      htmlOutput.message = '';
+      htmlOutput.new_table ='';
+      htmlOutput.course = course;
+      // Incorrect barcode requested
+      var incorrect_barcode_message = 'That barcode, '+barcode+', is incorrect. Please select the reserve item from the menu below.';
+      htmlOutput.incorrect_barcode_message = incorrect_barcode_message;
+      return htmlOutput.evaluate();
+    }
+
     var course = 'direct_request';
     var textbook;
     array_temp = getUrlAndId(barcode); //Store getBarcodeAndUrl function output in an array
@@ -109,8 +123,18 @@ function doPost(e) {
     item_id = array_temp[1]; //Grab item ID -- Added 6/7/22 EL 
     item_url = array_temp[2]; //Grab item (PDF) URL
 
+  } else {
+    // NO BARCODE FOUND IN POST SO TREAT AS A COURSE REQUEST
+    var course = e.parameters.course.toString(); //Convert course name to string
+    var textbook = e.parameters.textbook.toString(); //Convert textbook (PDF) name to string
+    array_temp = getBarcodeAndUrlAndId(course, textbook); //Store getBarcodeAndUrl function output in an array
+    barcode = array_temp[0]; //Grab item barcode
+    item_id = array_temp[1]; //Grab item ID -- Added 6/7/22 EL 
+    item_url = array_temp[2]; //Grab item (PDF) URL  
+
   }
-  
+
+ 
   /* SET LOAN DATE */
   var date_loan;
   date_loan = getLoanDate(barcode,textbook); //Store getLoanDate function output in an array
@@ -129,6 +153,7 @@ function doPost(e) {
   htmlOutput.message = request_status; //Print request status message to web page for patron - modified 6/17/22 JR
   htmlOutput.course = course; //Display courses to patrons in dropdown
   htmlOutput.new_table = item_table; //Display items table - added 6/29/22 JR
+  htmlOutput.incorrect_barcode_message = '';
   return htmlOutput.evaluate();  
 }
 
@@ -198,7 +223,7 @@ function getBarcodeAndUrlAndId(course, textbook) {
   {
       if(shReserves.getRange(i, 1).getValue() === course) { //If row one contains course name selected from dropdown
         if(shReserves.getRange(i, 2).getValue() === textbook) { //If row two contains textbook name selected from dropdown
-          return_array.push(barcode_temp = shReserves.getRange(i, 3).getValue()); //Grab item barcode from row 3
+          return_array.push(barcode_temp = shReserves.getRange(i, 3).getValue().toString()); //Grab item barcode from row 3
           return_array.push(id_temp = shReserves.getRange(i, 4).getValue()); //Grab item ID from row 4 -- Added 6/7/22 EL 
           return_array.push(url_temp = shReserves.getRange(i, 5).getValue()); //Grab PDF URL from row 5 
         }
@@ -234,7 +259,7 @@ function getLoanDate(barcode, textbook) {
   for(var i = 2; i <= getLastRow; i++) // Iterate through rows of the "InUse" spreadsheet 
   {
     //REQUESTED ITEM IN USE
-      if(ssInUse.getRange(i, 1).getValue() === barcode) { // If item barcode is in row one
+      if(ssInUse.getRange(i, 1).getValue().toString() === barcode) { // If item barcode is in row one
         var loan_status = 'In Use'; // Set loan status to "In Use"
         var date_lend = ssInUse.getRange(i, 3).getValue() //Set loan date to previous loan's exp date for the email message - updated 8/2/22 EL
         var request_status = 'Item in use. Try again later.'; //store request status message for printing - added 6/17/22 JR
@@ -287,6 +312,19 @@ function getTitle(itemBarcode) {
   return item_title;  
 }
 
+
+//Check for valid barcode
+function checkBarcode(barcode) { 
+  var getLastRow = shReserves.getLastRow();
+  var valid_barcode;
+  for(var i = 2; i <= getLastRow; i++) //Iterate through rows of the "Reserves" spreadsheet
+  {
+      if(shReserves.getRange(i, 3).getValue().toString() === barcode) { //If column 3 matches barcode
+        valid_barcode = 'yes';
+      }
+  }
+  return valid_barcode;  
+}
 
 
 //---------SHARE FILE--------
