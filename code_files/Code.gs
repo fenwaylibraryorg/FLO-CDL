@@ -10,7 +10,7 @@
 var folderOfScans = '1ROYjGhNoqh9-dVPhKUlo73ePNO4FfTzD'; 
 
 // LOAN LENGTH IN HOURS
-var loanLength = 2;
+//var loanLength = 2;
 
 // URL FOR REQUESTING RESERVES: this is the Web App URL (Deployment URL)
 var formURL = 'https://script.google.com/a/macros/hcc.edu/s/AKfycbxFPjfiDHGE5MGLhUiXKuRHnLy1-l55kp5oz6qO14Ai_wpJ16FrSIBe7SaPYQ-dLEE7-w/exec';
@@ -137,7 +137,8 @@ function doPost(e) {
  
   /* SET LOAN DATE */
   var date_loan;
-  date_loan = getLoanDate(barcode,textbook); //Store getLoanDate function output in an array
+  var loanLength = parseInt(e.parameters.loan,10); //Get loan duration from dropdown
+  date_loan = getLoanDate(barcode,textbook,loanLength); //Store getLoanDate function output in an array
   var date_lend = date_loan[0]; //Grab loan date
   var date_expire = date_loan[1]; //Grab expiration date 
   var loan_status = date_loan[2];  //Grab loan status - Added 6/6/22 EL
@@ -145,8 +146,8 @@ function doPost(e) {
 
 
   AddRecord(name, studentid, course, textbook, email, barcode, item_id, item_url, loan_status, date_lend, date_expire); //Call AddRecord function
-  FileShare(email, item_id, loan_status, date_expire); //Call FileShare function 
-  var item_table = createTable(course,textbook,date_expire,loan_status); //create table for items - added 6/29/22 JR
+  FileShare(email, item_id, loan_status, date_expire,loanLength); //Call FileShare function 
+  var item_table = createTable(course,textbook,date_expire,loan_status,loanLength); //create table for items - added 6/29/22 JR
   
   var htmlOutput =  HtmlService.createTemplateFromFile('DependentSelect');
   var course = getCourse();
@@ -159,7 +160,7 @@ function doPost(e) {
 
 
 //Display unavailable items in a table with next date available - added 6/29/22 JR
-  function createTable(course,textbook,date_expire,loan_status) {
+  function createTable(course,textbook,date_expire,loan_status,loanLength) {
   if (loan_status === 'In Use') { //create table for unavailable items - added 6/29/22 JR
     const options = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'}
     //date_expire.setMinutes(date_expire.getMinutes() + 5);
@@ -251,7 +252,7 @@ function getUrlAndId(barcode) {
 
 
 //Get loan & expiration dates for given item barcode - updated to add textbook 7/29/22 JR
-function getLoanDate(barcode, textbook) {
+function getLoanDate(barcode, textbook, loanLength) {
   var ssInUse = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("InUse"); // Grab "InUse" spreadsheet
   var getLastRow = ssInUse.getLastRow();
   var return_array = [];
@@ -328,7 +329,7 @@ function checkBarcode(barcode) {
 
 
 //---------SHARE FILE--------
-function FileShare(email, item_id, loan_status, date_expire) {
+function FileShare(email, item_id, loan_status, date_expire, loanLength) {
   if(loan_status === 'Active'){
     try{
       var customMessage = "This PDF loan will expire in "+loanLength+" hours. Please re-request this title if you need more time.";  // Please set the custom message here.
