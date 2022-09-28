@@ -433,6 +433,7 @@ function listFiles(fold,parent){
 
 
     shReserves.appendRow(data);
+    shReserves.sort(2).sort(1); //This requires you to freeze the header row of the Reserves tab 
   }
 }
 // END OF LIST FILES AND FOLDERS AND PUSH TO SPREADSHEET
