@@ -278,7 +278,7 @@ function getLoanDate(barcode, textbook, loanLength) {
     var request_status = 'Request Successful. Check your email.'; //store request status message for printing - added 6/17/22 JR
     const now = new Date(); // Create a date object for the current date and time 
     let date_exp = new Date(); // Copy current date object 
-    date_exp.setHours(date_exp.getHours() + 3); // Set expiration date-time to 3 hours later than current time - Updated 8/2/2022 EL 
+    date_exp.setHours(date_exp.getHours() + loanLength); // Set expiration date-time to 3 hours later than current time - Updated 8/2/2022 EL 
     //date_exp.setMinutes(date_exp.getMinutes() + 15);
     const date_lend = Utilities.formatDate(now, 'America/New_York', 'M/dd/yyyy HH:mm:ss'); // Format lend date
     date_exp = Utilities.formatDate(date_exp, 'America/New_York', 'M/dd/yyyy HH:mm:ss'); // Format expiration date 
