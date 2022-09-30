@@ -31,19 +31,35 @@
     
     };
 
+    function AcceptTerms () {
+      if (document.getElementById('terms').checked) {
+        document.getElementById('submitButton').disabled = false;
+      } else {
+        document.getElementById('submitButton').disabled = true;
+      }
+    };
 
   </script>  
   </head>
-  <body>
-    <h1>FLO CDL Demo</h1>
+  <body onload="AcceptTerms ()"> 
+    <h1>CDL Demo</h1>
     <?var url = getUrl();?>
     <div id="incorrect_barcode_message" ><?= incorrect_barcode_message ?></div>    
     <form method="post" action="<?= url ?>" >
-      
+
+      </br><div id="message" ><?= message ?></div>
+      </br><table id="item_table"><?!= new_table ?></table>    
+
+
       <label >Name</label><br>
       <input type="text" name="name" required maxlength="50"/><br><br>
       <label required >Student ID</label><br>
       <input name="studentid" type="number" required/><br><br>
+
+<!--EMAIL ONLY FOR THIS DEMO--->
+      <label required >E-mail address</label> (automatically captured in production)<br>
+      <input type="text" name="email" required maxlength="50"/><br><br>
+
 
       <label  >Course</label><br>
       <select name="course" id="course" onchange="GetTextbook(this.value)" >
@@ -55,10 +71,27 @@
       <label >Textbook</label><br>
       <select name="textbook" id="textbook">
       </select><br><br>
+      
+      <label>Loan Period</label><br>
+      <select name="loan" id="loan">
+      <option value="1" >1 minute</option>
+      <option value="6" >6 minutes</option>
+      <option value="60" >1 hour</option>
+      <option value="120" >2 hours</option>
+      </select><br><br>
 
-      <input type="submit" name="submitButton" id="submitButton" value="Submit"/> 
-      </br></br><div id="message" ><?= message ?></div>
-      </br></br><table id="item_table"><?!= new_table ?></table>    
+<p><strong>By checking this box I acknowledge that I have read and agree with the following:</strong> <br><br>
+       
+        United States Copyright law (Title 17 of the U.S. Code) governs the making of reproductions of copyrighted material.  The person using this file is liable for any infringement that may
+        result from making a copy of protected material.  “Making a copy” includes, but may not be limited to: photocopying; scanning (to print, to file, or to email); printing out; copying
+        downloading, or uploading a digital file; and converting analog format to digital format.<br><br>
+        
+        For more information, please see <a href="www.copyright.gov" target="_blank">www.copyright.gov</a>.</p><br>
+
+      <input onclick="AcceptTerms()" type="checkbox" id="terms" name="terms" value="terms" />
+      <label for="terms"> I agree</label><br><br><br>
+
+      <input type="submit" name="submitButton" id="submitButton" value="Submit"/>
     </form>
   </body>
 </html>
