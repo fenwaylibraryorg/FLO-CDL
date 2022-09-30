@@ -7,17 +7,19 @@
 
 // Change FolderID to where scanned documents are located
 //   which can be found by selecting "getfolderid" above and click Run
-var folderOfScans = '1ROYjGhNoqh9-dVPhKUlo73ePNO4FfTzD'; 
+var folderOfScans = '1PKjUskuQUSnRlDxVgZXRjbXchAnnKiVC'; 
 
 // LOAN LENGTH IN HOURS
-var loanLength = 2;
+// var loanLength = .1;
 
 // URL FOR REQUESTING RESERVES: this is the Web App URL (Deployment URL)
-var formURL = 'https://script.google.com/a/macros/hcc.edu/s/AKfycbxFPjfiDHGE5MGLhUiXKuRHnLy1-l55kp5oz6qO14Ai_wpJ16FrSIBe7SaPYQ-dLEE7-w/exec';
+var formURL = 'https://script.google.com/macros/s/AKfycbySPO_j9QYp5MClXWXvxgD4Nt8bbfcIRqTGAMK5smh9-g_vvX_RLW7vqx8v0L4SOAsu/exec';
 
 // NAME OF SHEET CONTAINING LIST OF ITEMS ON E-RESERVE
 //    No change needed unless the sheet is renamed
 var shReserves = SpreadsheetApp.getActive().getSheetByName('Reserves'); 
+var shSettings = SpreadsheetApp.getActive().getSheetByName('Settings'); 
+
 
 /////////////////////////////////////////////////////////////
 
@@ -59,7 +61,6 @@ function doGet(e) {
       return htmlOutput.evaluate();
     }
 
-
     var item_title = getTitle(barcode); //Grab item barcode
     var itemOutput =  HtmlService.createTemplateFromFile('RequestByBarcode');
     itemOutput.itembarcode = barcode; //Pass on item barcode
@@ -89,7 +90,12 @@ function doPost(e) {
   Logger.log(JSON.stringify(e)); //Log transaction 
   var name = e.parameters.name.toString(); //Convert name to string
   var studentid = e.parameters.studentid.toString(); //Convert student ID to string
-  var email = Session.getActiveUser().getEmail();  // Log the email address of the person running the script.
+
+var email = e.parameters.email.toString(); //Convert student ID to string
+
+// DEMO ASKS FOR E-MAIL ADDRESS; NOT USED IN PRODUCTION
+//  var email = Session.getActiveUser().getEmail();  // Log the email address of the person running the script.
+
   const now = new Date(); //Create a date object for the current date and time 
 
 //  var barcode;
@@ -137,7 +143,16 @@ function doPost(e) {
  
   /* SET LOAN DATE */
   var date_loan;
-  date_loan = getLoanDate(barcode,textbook); //Store getLoanDate function output in an array
+
+//ADD THIS
+  // var loanLength = parseInt(e.parameters.loan,10); //Get loan duration from dropdown
+  var loanLength = parseFloat(e.parameters.loan); //Get loan duration from dropdown
+  // var loanLength = e.parameters.loan.toString(); //Convert loan to string
+  if (!((loanLength < 301)&&(loanLength > 0))) { //  Check to see value is reasonable: 1 to 300 minutes, otherwise set to 1 hour
+    loanLength = 60;
+  }
+
+  date_loan = getLoanDate(barcode,textbook,loanLength); //Store getLoanDate function output in an array
   var date_lend = date_loan[0]; //Grab loan date
   var date_expire = date_loan[1]; //Grab expiration date 
   var loan_status = date_loan[2];  //Grab loan status - Added 6/6/22 EL
@@ -145,8 +160,8 @@ function doPost(e) {
 
 
   AddRecord(name, studentid, course, textbook, email, barcode, item_id, item_url, loan_status, date_lend, date_expire); //Call AddRecord function
-  FileShare(email, item_id, loan_status, date_expire); //Call FileShare function 
-  var item_table = createTable(course,textbook,date_expire,loan_status); //create table for items - added 6/29/22 JR
+  FileShare(email, item_id, loan_status, date_expire,loanLength); //Call FileShare function 
+  var item_table = createTable(course,textbook,date_expire,loan_status,loanLength); //create table for items - added 6/29/22 JR
   
   var htmlOutput =  HtmlService.createTemplateFromFile('DependentSelect');
   var course = getCourse();
@@ -159,7 +174,7 @@ function doPost(e) {
 
 
 //Display unavailable items in a table with next date available - added 6/29/22 JR
-  function createTable(course,textbook,date_expire,loan_status) {
+  function createTable(course,textbook,date_expire,loan_status,loanLength) {
   if (loan_status === 'In Use') { //create table for unavailable items - added 6/29/22 JR
     const options = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'}
     //date_expire.setMinutes(date_expire.getMinutes() + 5);
@@ -251,7 +266,7 @@ function getUrlAndId(barcode) {
 
 
 //Get loan & expiration dates for given item barcode - updated to add textbook 7/29/22 JR
-function getLoanDate(barcode, textbook) {
+function getLoanDate(barcode, textbook, loanLength) {
   var ssInUse = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("InUse"); // Grab "InUse" spreadsheet
   var getLastRow = ssInUse.getLastRow();
   var return_array = [];
@@ -277,8 +292,15 @@ function getLoanDate(barcode, textbook) {
     var request_status = 'Request Successful. Check your email.'; //store request status message for printing - added 6/17/22 JR
     const now = new Date(); // Create a date object for the current date and time 
     let date_exp = new Date(); // Copy current date object 
-    date_exp.setHours(date_exp.getHours() + 3); // Set expiration date-time to 3 hours later than current time - Updated 8/2/2022 EL 
-    //date_exp.setMinutes(date_exp.getMinutes() + 15);
+
+
+
+
+//FIXING
+
+    //date_exp.setHours(date_exp.getHours() + loanLength); // Set expiration date-time to loanLength from drop down
+    
+    date_exp.setMinutes(date_exp.getMinutes() + loanLength); // Set expiration date-time to loanLength from drop down
     const date_lend = Utilities.formatDate(now, 'America/New_York', 'M/dd/yyyy HH:mm:ss'); // Format lend date
     date_exp = Utilities.formatDate(date_exp, 'America/New_York', 'M/dd/yyyy HH:mm:ss'); // Format expiration date 
 
@@ -328,7 +350,7 @@ function checkBarcode(barcode) {
 
 
 //---------SHARE FILE--------
-function FileShare(email, item_id, loan_status, date_expire) {
+function FileShare(email, item_id, loan_status, date_expire, loanLength) {
   if(loan_status === 'Active'){
     try{
       var customMessage = "This PDF loan will expire in "+loanLength+" hours. Please re-request this title if you need more time.";  // Please set the custom message here.
@@ -343,7 +365,7 @@ function FileShare(email, item_id, loan_status, date_expire) {
   else{
     date_expire.setMinutes(date_expire.getMinutes() + 5);
     var dateExpireClean = Utilities.formatDate(date_expire, "America/New_York", "hh:mm a");
-    MailApp.sendEmail(email,'Requested Reserve Item Unavailable','The reserve item you requested is currently checked out and will next be available at ' + dateExpireClean + '. To re-request this item please return to our e-reserves request form: https://script.google.com/a/macros/flo.org/s/AKfycbxhGAzRWMbF-vhX3Mi4TyyRE_qYnkzoz6MxD6x_KjzwqUn671II3AkwevVJTljyOGF81w/exec'); 
+    MailApp.sendEmail(email,'Requested Reserve Item Unavailable','The reserve item you requested is currently checked out and will next be available at ' + dateExpireClean + '. To re-request this item please return to our e-reserves request form: ' + formURL); 
     
 
   }
@@ -433,6 +455,6 @@ function listFiles(fold,parent){
 
 
     shReserves.appendRow(data);
+    shReserves.sort(2).sort(1);
   }
-}
-// END OF LIST FILES AND FOLDERS AND PUSH TO SPREADSHEET
+}// END OF LIST FILES AND FOLDERS AND PUSH TO SPREADSHEET
