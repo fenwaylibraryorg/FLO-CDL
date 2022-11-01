@@ -13,7 +13,7 @@ var folderOfScans = '1ROYjGhNoqh9-dVPhKUlo73ePNO4FfTzD';
 var loanLength = 2;
 
 // URL FOR REQUESTING RESERVES: this is the Web App URL (Deployment URL)
-var formURL = 'https://script.google.com/a/macros/hcc.edu/s/AKfycbxFPjfiDHGE5MGLhUiXKuRHnLy1-l55kp5oz6qO14Ai_wpJ16FrSIBe7SaPYQ-dLEE7-w/exec';
+var formURL = 'var formURL = 'https://script.google.com/a/macros/hcc.edu/s/AKfycbxFPjfiDHGE5MGLhUiXKuRHnLy1-l55kp5oz6qO14Ai_wpJ16FrSIBe7SaPYQ-dLEE7-w/exec';
 
 // NAME OF SHEET CONTAINING LIST OF ITEMS ON E-RESERVE
 //    No change needed unless the sheet is renamed
@@ -160,13 +160,13 @@ function doPost(e) {
 
 //Display unavailable items in a table with next date available - added 6/29/22 JR
   function createTable(course,textbook,date_expire,loan_status) {
+  var textbook_get_title = textbook.split("|");
+  var textbook_title = textbook_get_title[0];
   if (loan_status === 'In Use') { //create table for unavailable items - added 6/29/22 JR
     const options = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'}
     //date_expire.setMinutes(date_expire.getMinutes() + 5);
     var day = date_expire.toLocaleDateString(undefined, options);
     var time = date_expire.toLocaleTimeString();
-    var textbook_get_title = textbook.split("|");
-    var textbook_title = textbook_get_title[0]; //Added to allow availability in dropdown functionality. Separates title from status. 
     var new_table = '<th scope="col">Course</th><th scope="col">Title</th><th scope="col">In Use Until</th><tr><td>' + course +'</td><td>'+ textbook_title +'</td><td>' + day +" at "+ time +'</td></tr>';
   }
   
@@ -207,19 +207,20 @@ function getCourse() {
 //Get textbook (PDF) names for a given course from the "Reserves" spreadsheet
 function getTextbook(course) { 
   var ssInUse = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("InUse"); // Grab "InUse" tab of spreadsheet
-  var getLastRow = shReserves.getLastRow(); //Get last row of "Reserves" tab of spreadsheet
+  var getLastRow = shReserves.getLastRow();
   var getLastRow2 = ssInUse.getLastRow(); //Get last row of "InUse" tab of spreadsheet
-  var return_array = []; //Set a blank array to gather values in 
+  var return_array = [];
   for(var i = 2; i <= getLastRow; i++) //Iterate through rows of the "Reserves" spreadsheet
   {
-      if(shReserves.getRange(i, 1).getValue() === course) { //If row 1 matches selected course name 
+      if(shReserves.getRange(i, 1).getValue() === course) {
+        
         var textbook = shReserves.getRange(i, 2).getValue(); //Get textbook name
         var barcode = shReserves.getRange(i, 3).getValue(); //Get textbook barcode
         for(var j = 2; j <= getLastRow2; j++) //Iterate through rows of "InUse" tab
-        { 
+        {
           if(ssInUse.getRange(j, 1).getValue() === barcode) { //If barcode in "InUse" tab
             var item_status = 'In Use'; //Set status in dropdown to "In Use"
-            return_array.push(textbook + '|' + item_status); 
+            return_array.push(textbook + '|' + item_status);
           }
         }
         if (return_array.includes(textbook + '|In Use') === false){ //If barcode not found in "InUse" tab
@@ -230,18 +231,17 @@ function getTextbook(course) {
   return return_array;  
 }
 
-
 //Get item barcode and PDF URL from course and textbook 
 function getBarcodeAndUrlAndId(course, textbook) { 
   var getLastRow = shReserves.getLastRow();
   var return_array = [];
   var textbook_get_title = textbook.split("|");
-  var textbook_title = textbook_get_title[0]; //Added to allow availability in dropdown functionality. Separates title from status. 
+  var textbook_title = textbook_get_title[0];
   for(var i = 2; i <= getLastRow; i++) //Iterate through rows of the "Reserves" spreadsheet 
   {
       if(shReserves.getRange(i, 1).getValue() === course) { //If row one contains course name selected from dropdown
         if(shReserves.getRange(i, 2).getValue() === textbook_title) { //If row two contains textbook name selected from dropdown
-          return_array.push(barcode_temp = shReserves.getRange(i, 3).getValue()); //Grab item barcode from row 3
+          return_array.push(barcode_temp = shReserves.getRange(i, 3).getValue().toString()); //Grab item barcode from row 3
           return_array.push(id_temp = shReserves.getRange(i, 4).getValue()); //Grab item ID from row 4 -- Added 6/7/22 EL 
           return_array.push(url_temp = shReserves.getRange(i, 5).getValue()); //Grab PDF URL from row 5 
         }
@@ -314,9 +314,9 @@ function getLoanDate(barcode, textbook) {
 
 //Add request to "Transactions spreadsheet"
 function AddRecord(name, studentid, course, textbook, email, barcode, item_id, item_url, loan_status, date_lend, date_expire) { // Grab variables collected from form and functions
+  var ssTransactions = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Transactions"); // Get "Transactions" spreadsheet
   var textbook_get_title = textbook.split("|");
   var textbook_title = textbook_get_title[0];
-  var ssTransactions = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Transactions"); // Get "Transactions" spreadsheet
   ssTransactions.appendRow([name, studentid, course, textbook_title, new Date(), email, barcode, item_id, item_url, loan_status, date_lend, date_expire]); // Add a row to "Transactions" spreadsheet with values
   
 }
