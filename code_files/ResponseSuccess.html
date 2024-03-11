@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('css'); ?>    
+  </head>
+    <body>
+    <h1>Library E-Reserves</h1>
+    <?var url = getUrl();?>
+    
+    <form method="post" action="<?= url ?>" >
+
+      <!-- If you want a link to requested resource displayed on this page, enable the following line -->
+      <!--
+        <div id="message" >Here is a <a href="<?= item_url ?>">link to it</a></div>
+        -->
+
+      <!-- If you want a link to e-mailed to the requestor, enable the following line -->
+      <div id="message" >Check your e-mail for the link to the item you requested.</a></div>
+
+
+      </br><table id="item_table"><?!= new_table ?></table>    
+      </form>
+
+      
+      
+    </body>
+</html>
