@@ -31,19 +31,61 @@
     
     };
 
+    function AcceptTerms () {
+      if (document.getElementById('terms').checked) {
+        document.getElementById('submitButton').disabled = false;
+      } else {
+        document.getElementById('submitButton').disabled = true;
+      }
+    };
 
   </script>  
+
+  <style>
+  * {
+    box-sizing: border-box;
+  }
+
+  /* Create three equal columns that float next to each other */
+  .column {
+    float: left;
+    width: 33%;
+    padding: 5px;
+  }
+
+  /* Clear floats after the columns */
+  .row:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+  </style>
+
   </head>
-  <body>
-    <h1>FLO CDL Demo</h1>
+    <body>
+    <h1>HCC Library E-Reserves</h1>
     <?var url = getUrl();?>
     <div id="incorrect_barcode_message" ><?= incorrect_barcode_message ?></div>    
     <form method="post" action="<?= url ?>" >
+
+      <div id="message" ><?= message ?></div>
+      </br><table id="item_table"><?!= new_table ?></table>    
       
-      <label >Name</label><br>
-      <input type="text" name="name" required maxlength="50"/><br><br>
-      <label required >Student ID</label><br>
-      <input name="studentid" type="number" required/><br><br>
+
+<div class="row">
+  <div class="column" style="background-color:#FFFFF0;">
+    <label >Name</label><br>
+<input type="text" name="name" required maxlength="50"/><br><br>
+  </div>
+
+
+<div class="column" style="background-color:#FFFFF0;">
+<label required >Student ID</label><br>
+<input name="studentid" type="number" required/><br><br>
+  </div>
+
+
+</div>
 
       <label  >Course</label><br>
       <select name="course" id="course" onchange="GetTextbook(this.value)" >
@@ -52,13 +94,31 @@
       <option value="<?= course[i] ?>" ><?= course[i] ?></option>
       <? } ?>
       </select><br><br>
-      <label >Textbook</label><br>
+      <label >Course material</label><br>
       <select name="textbook" id="textbook">
       </select><br><br>
+      
+      <label>Choose a Loan Period</label><br>
+      <select name="loan" id="loan">
+      <option value="120" >2 hours</option>
+      <option value="60" >1 hour</option>
+      <option value="30" >30 minutes</option>
+      </select><br>
 
-      <input type="submit" name="submitButton" id="submitButton" value="Submit"/> 
-      </br></br><div id="message" ><?= message ?></div>
-      </br></br><table id="item_table"><?!= new_table ?></table>    
+<p><strong>By checking this box I acknowledge that I have read and agree with the following:</strong> <br>
+       
+        United States Copyright law (Title 17 of the U.S. Code) governs the making of reproductions of copyrighted material.  The person using this file is liable for any infringement that may
+        result from making a copy of protected material.  “Making a copy” includes, but may not be limited to: photocopying; scanning (to print, to file, or to email); printing out; copying
+        downloading, or uploading a digital file; and converting analog format to digital format.         
+        For more information, please see <a href="www.copyright.gov" target="_blank">www.copyright.gov</a>.
+        <br>
+
+      <input type="checkbox" id="terms" name="terms" value="terms" required>
+       
+      <label for="terms"> I agree</label><br>
+
+      <input type="submit" name="submitButton" id="submitButton" value="Submit"/>
+      </p>
     </form>
   </body>
 </html>
