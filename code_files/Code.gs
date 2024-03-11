@@ -9,7 +9,7 @@
 //   which can be found by selecting "getfolderid" above and click Run
 var folderOfScans = '1ROYjGhNoqh9-dVPhKUlo73ePNO4FfTzD'; 
 
-// LOAN LENGTH IN HOURS; now set below
+// LOAN LENGTH IN HOURS; now set in the DepedentSelect page.
 // var loanLength = 2;
 
 // URL FOR REQUESTING RESERVES: this is the Web App URL (Deployment URL)
