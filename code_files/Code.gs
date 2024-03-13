@@ -387,9 +387,21 @@ function include(filename) {
 function FileShare(email, item_id, loan_status, date_expire, loanLength) {
   if(loan_status === 'Active'){
     try{
-      var customMessage = "This loan will expire in "+loanLength+" hours. Please re-request this title if you need more time.";  // Please set the custom message here.
+      if (loanLength<60) {
+        var loanMessage = loanLength+" minutes";
+      } else {
+        var loanHours = loanLength / 60;
+        var loanMessage = loanHours+" hour(s)";
+      }
+
+      var customMessage = "This loan will expire in "+loanMessage+". Please re-request this title if you need more time.  Here is the link to it: "+item_url;  // Please set the custom message here.
+
       var resource = {role: "reader", type: "user", value: email};
       Drive.Permissions.insert(resource, item_id, {emailMessage: customMessage});
+
+     // Send email notification; add this notification if the above stops working
+     // MailApp.sendEmail(email, 'Item shared with you', customMessage)
+
       }
     catch (e) {
       Logger.log(item_id);
