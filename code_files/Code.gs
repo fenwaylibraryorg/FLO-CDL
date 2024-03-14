@@ -28,6 +28,9 @@ var shSettings = SpreadsheetApp.getActive().getSheetByName('Settings');
 
 /////////////////////////////////////////////////////////////
 // REST OF SCRIPT
+
+var item_url; // Make this a global variable so accessible to all functions
+
 // GET ID OF FOLDER CONTAINING RESERVES
 function getfolderid() { //get ID of folder by name - 7/27/22 JR
   Logger.log(DriveApp.getFoldersByName('CDL Files').next().getId());
@@ -398,6 +401,17 @@ function FileShare(email, item_id, loan_status, date_expire, loanLength) {
 
       var resource = {role: "reader", type: "user", value: email};
       Drive.Permissions.insert(resource, item_id, {emailMessage: customMessage});
+
+      // The above may not worked for a shared google drive.  If it does not, try using the following instead. 
+      //    The important change is using: supportsAllDrives
+      //
+      //var optionalArgs = {
+      //  sendNotificationEmails: true,
+      //  supportsAllDrives: true,
+      //  emailMessage: customMessage
+      //}
+      // Drive.Permissions.insert(resource, item_id, optionalArgs);
+
 
      // Send email notification; add this notification if the above stops working
      // MailApp.sendEmail(email, 'Item shared with you', customMessage)
