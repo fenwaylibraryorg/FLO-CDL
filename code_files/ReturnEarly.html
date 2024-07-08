@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <html lang="en">
+      <base target="_top">
+    <?!= include('css'); ?>
+    <!--CUSTOM MESSAGE OPTION-->
+  <title>My Loans</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css.html" >
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+
+    <div class="container">
+      <?var url = getUrl();?>
+      <h1>My Loans</h1>
+      <!--customize message text under custom message options in code.gs-->
+</br><div id="message" class="alert alert-info"><?= message ?></div></br>
+    <form method="post" action="<?= url ?>" aria-label="Return a loan">
+        <div class="form-group">
+            <label for="returnearly">Active Loans</label><br>
+            <select name='returnEarly' id='returnEarly' class="form-control" aria-label="CourseCode" required>
+                <option value="" ></option>
+                <? for(var i = 0; i < activeRequest.length; i++) { ?>      
+                <option value="<?= activeRequest[i][3] ?>" ><?= activeRequest[i][3] ?></option>
+                <? } ?>
+            </select><br>   
+        </div> 
+       <button type="submit" class="btn btn-primary" name="submitButton" id="submitButton" value="Return" required>Return</button>
+
+    </form>
+
+<!--UPDATE-->
+</br><a href="https://script.google.com/a/macros/flo.org/s/AKfycbw0sjqHFCHOjuZvWhN8pg17HSBlxh-jCqas3eJjYMWBvauLDOcRtnjjkV-I8IKOhUhB2A/exec">Request Form</a></br>
+    <!--Link to loan return form-->
+    <!--</br></br><a href="https://script.google.com/a/macros/northshore.edu/s/AKfycbxNGJhMs-RIVybIuz0y5sDbRMw9jDwXqM794JB6HHFUc1iyKRic1gh17AWpLWc73CvjBw/exec?returnearly=true">My Loans</a></br>-->
+</div>
+
+</body>
+</html>
+
