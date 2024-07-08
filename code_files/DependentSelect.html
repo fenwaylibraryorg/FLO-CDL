@@ -1,124 +1,115 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <base target="_top">
+    <html lang="en">
+      <base target="_top">
     <?!= include('css'); ?>
+  <title>Library E-Reserves</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css.html" >
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
     <script>
-    async function GetTextbook(course) 
+    async function GetTextbook(course)
     {
-    
-    google.script.run.withSuccessHandler(function(ar) 
+
+    google.script.run.withSuccessHandler(function(ar)
     {
 
     console.log(ar);
-    
+
     textbook.length = 0;
-    
+
     let option = document.createElement("option");
     option.value = "";
     option.text = "";
     textbook.appendChild(option);
-    
-    ar.forEach(function(item, index) 
-    {    
+
+    ar.forEach(function(item, index)
+    {
       let option = document.createElement("option");
       option.value = item;
       option.text = item;
-      textbook.appendChild(option);    
+      textbook.appendChild(option);
     });
-    
+
     }).getTextbook(course);
-    
+
     };
 
-    function AcceptTerms () {
-      if (document.getElementById('terms').checked) {
-        document.getElementById('submitButton').disabled = false;
-      } else {
-        document.getElementById('submitButton').disabled = true;
-      }
-    };
 
-  </script>  
+  </script>
 
-  <style>
-  * {
-    box-sizing: border-box;
-  }
-
-  /* Create three equal columns that float next to each other */
-  .column {
-    float: left;
-    width: 33%;
-    padding: 5px;
-  }
-
-  /* Clear floats after the columns */
-  .row:after {
-    content: "";
-    display: table;
-    clear: both;
-  }
-  </style>
 
   </head>
-    <body>
-    <h1>HCC Library E-Reserves</h1>
-    <?var url = getUrl();?>
-    <div id="incorrect_barcode_message" ><?= incorrect_barcode_message ?></div>    
-    <form method="post" action="<?= url ?>" >
+  <body>
 
-      <div id="message" ><?= message ?></div>
-      </br><table id="item_table"><?!= new_table ?></table>    
-      
+    <div class="container">
+     <!-- <h1>Request a Course Reserve</h1> -->
+      <?var url = getUrl();?>
+    <form method="post" action="<?= url ?>" aria-label="Request a Course Reserve">
+   
+       
+    
+      <div class="form-group"> 
+        <h1>Library E-Reserves</h1>
+      </div>  
+      <div class="form-group"> 
+        <label for="Name">Student Name</label>
+        <input type="text" id="name" name="name" class="form-control" aria-label="Student name" required maxlength="50">
+      </div>
 
-<div class="row">
-  <div class="column" style="background-color:#FFFFF0;">
-    <label >Name</label><br>
-<input type="text" name="name" required maxlength="50"/><br><br>
-  </div>
+      <div class="form-group">
+        <label for="studentid">Student ID</label>
+        <input type="number" class="form-control" id="studentid" name="studentid" aria-label="Student ID" required maxlength="50" >
+        <small id="studentIDHelp" class="form-text text-muted">Please enter your North Shore student ID number.</small>
+      </div> 
+
+      <div class="form-group">
+        <label for="course" aria-label="courseName">Course Code</label>
+        <select id="course" name="course" class="form-control" aria-label="CourseCode" onchange="GetTextbook(this.value)" required>
+          <option value="" ></option>
+         <? for(var i = 0; i < course.length; i++) { ?>
+         <option value="<?= course[i] ?>" ><?= course[i] ?></option>
+         <? } ?>
+        </select>
+        <small id="CourseHelp" class="form-text text-muted">Please select your Course Code.</small>
+      </div>
+
+     <div class="form-group">
+       <label for="textbook" aria-label="Title" >Reserve Title</label><br>
+       <select id="textbook" name="textbook" class="form-control" required>
+       </select>
+     </div>
 
 
-<div class="column" style="background-color:#FFFFF0;">
-<label required >Student ID</label><br>
-<input name="studentid" type="number" required/><br><br>
-  </div>
-
-
-</div>
-
-      <label  >Course</label><br>
-      <select name="course" id="course" onchange="GetTextbook(this.value)" >
-      <option value="" ></option>
-      <? for(var i = 0; i < course.length; i++) { ?>      
-      <option value="<?= course[i] ?>" ><?= course[i] ?></option>
-      <? } ?>
-      </select><br><br>
-      <label >Course material</label><br>
-      <select name="textbook" id="textbook">
-      </select><br><br>
-      
-      <label>Choose a Loan Period</label><br>
+     <!--Uncomment to use loan dropdown else loan length will default to loanDefault global variable-->
+      <!--set option values in minutes--> 
+      <label>Loan Period</label><br>
       <select name="loan" id="loan">
-      <option value="120" >2 hours</option>
-      <option value="60" >1 hour</option>
+      <option value="1" >1 minute</option>
       <option value="30" >30 minutes</option>
-      </select><br>
+      <option value="60" >1 hour </option>
+      <option value="120" >2 hours</option>
+      </select><br><br>
 
-<p><strong>By checking this box I acknowledge that I have read and agree with the following:</strong> <br>
-       
-        United States Copyright law (Title 17 of the U.S. Code) governs the making of reproductions of copyrighted material.  The person using this file is liable for any infringement that may
-        result from making a copy of protected material.  “Making a copy” includes, but may not be limited to: photocopying; scanning (to print, to file, or to email); printing out; copying
-        downloading, or uploading a digital file; and converting analog format to digital format.         
-        For more information, please see <a href="www.copyright.gov" target="_blank">www.copyright.gov</a>.
-        <br>
-
-      <input type="checkbox" id="terms" name="terms" value="terms" required>
-       
-      <label for="terms"> I agree</label><br>
-
-      <input type="submit" name="submitButton" id="submitButton" value="Submit"/>
-      </p>
+    <!-- form to check for copyright language -->
+     <div class="form-group">
+        <input type="checkbox" class="form-check-input" id="copyrightCheck" required aria-label="Agree to copyright rules">
+        <small>By checking this box I acknowledge that I have read and agree with the following: United States Copyright law (Title 17 of the U.S. Code) governs the making of reproductions of copyrighted material.  The person using this file is liable for any infringement that may result from making a copy of protected material.  “Making a copy” includes, but may not be limited to: photocopying; scanning (to print, to file, or to email); printing out; copying, downloading, or uploading a digital file; and converting analog format to digital format.
+For more information,please see <a href="www.copyright.gov" target="_blank">www.copyright.gov</a>.</small>
+      
+      </div>
+      
+       <button type="submit" class="btn btn-primary" name="submitButton" id="submitButton" value="Submit" required>Submit</button>
+    <!--UPDATE link-->
+    </br></br><a href=" ">My Loans</a>
     </form>
+    </br>
+
+    
   </body>
 </html>
