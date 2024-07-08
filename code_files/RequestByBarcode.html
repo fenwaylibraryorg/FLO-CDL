@@ -1,44 +1,70 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <base target="_top">
+    <html lang="en">
+      <base target="_top">
     <?!= include('css'); ?>
-
-
+  <title>Request Course Reserve</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css.html" >
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
   </head>
   <body>
-    <h1>FLO CDL</h1>
-    <?var url = getUrl();?>
-  
-    
 
-    <form method="post" action="<?= url ?>" >
+    <div class="container">
+      <?var url = getUrl();?>
 
-      <h3>Request for: <?!= itemtitle ?></h3>
-      <br>
-      <input type="hidden" name="barcode" value="<?!= itembarcode ?>">
-      <input type="hidden" name="course" value="item_request">
-      <input type="hidden" name="textbook" value="<?!= itemtitle ?>">
-      
-      
-      <label >Name</label><br>
-      <input type="text" name="name" required maxlength="50"/><br><br>
-      <label required >Student ID</label><br>
-      <input name="studentid" type="number" required/><br><br>
+    <form method="post" action="<?= url ?>" aria-label="Request a Course Reserve">
+    <input type="hidden" name="barcode" value="<?!= itembarcode ?>">
+    <div class="form-group">
+        <h1>Library Course Reserve Request form</h1>
+    </div>
+        <div class="form-group"> 
+        <label for="Name">Student Name</label>
+        <input type="text" id="name" name="name" class="form-control" aria-label="Student name" required maxlength="50">
+    </div>
+    <div class="form-group">
+      <label for="studentid">Student ID</label>
+      <input type="number" class="form-control" id="studentid" name="studentid" aria-label="Student ID" required maxlength="50" >
+      <small id="studentIDHelp" class="form-text text-muted">Please enter your student ID number.</small>
+    </div> 
 
-      <p><strong>By checking this box I acknowledge that I have read and agree with the following:</strong> <br>
-       
-        United States Copyright law (Title 17 of the U.S. Code) governs the making of reproductions of copyrighted material.  The person using this file is liable for any infringement that may
-        result from making a copy of protected material.  “Making a copy” includes, but may not be limited to: photocopying; scanning (to print, to file, or to email); printing out; copying
-        downloading, or uploading a digital file; and converting analog format to digital format.         
-        For more information, please see <a href="www.copyright.gov" target="_blank">www.copyright.gov</a>.
-        <br>
+    <div class="form-group">
+        <label for="textbook" aria-label="Title">Reserve Title</label><br>
+        <select name='textbook' id='textbook' class ="form=control" required>
+        <option value="" ></option>
+        <? for(var i = 0; i < textbook.length; i++) { ?>      
+        <option value="<?= textbook[i] ?>" ><?= textbook[i] ?></option>
+        <? } ?>
+        </select>
+    </div>
+    <!--Uncomment to use loan dropdown else loan length will default to loanDefault global variable-->
+      <!--set option values in minutes--> 
+      <!--<div class="form-group">
+        <label>Loan Period</label><br>
+      <select name="loan" id="loan">
+      <option value="30" >30 minutes</option>
+      <option value="60" >1 hour </option>
+      <option value="120" >2 hours</option>
+      </select></div></br>-->
+ 
+    <div class="form-group">
+        <input type="checkbox" class="form-check-input" id="copyrightCheck" required aria-label="Agree to copyright rules">
+        <small>By checking this box I acknowledge that I have read and agree with the following: United States Copyright law (Title 17 of the U.S. Code) governs the making of reproductions of copyrighted material.  The person using this file is liable for any infringement that may result from making a copy of protected material.  “Making a copy” includes, but may not be limited to: photocopying; scanning (to print, to file, or to email); printing out; copying, downloading, or uploading a digital file; and converting analog format to digital format.
+        For more information, please see <a href="https://copyright.gov">www.copyright.gov</a>.</small>
+    </div>
 
-      <input type="checkbox" id="terms" name="terms" value="terms" required>
-       
-      <label for="terms"> I agree</label><br>
-
-      <input type="submit" name="submitButton" id="submitButton" value="Submit"/> 
+      </br>
+       <button type="submit" class="btn btn-primary" name="submitButton" id="submitButton" value="Submit" required>Submit</button>
     </form>
+    <!--Link to loan return form-->
+    <!--</br><a href="https://script.google.com/a/macros/northshore.edu/s/AKfycbxNGJhMs-RIVybIuz0y5sDbRMw9jDwXqM794JB6HHFUc1iyKRic1gh17AWpLWc73CvjBw/exec?returnearly=true">My Loans</a>-->
+
+    <!--UPDATE-->
+    </br><a href=" ">My Loans</a>
+  </div>
   </body>
 </html>
