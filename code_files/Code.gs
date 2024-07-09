@@ -6,7 +6,7 @@
 //   for example: https://script.google.com/a/macros.../exec?barcode=123456789
 
 //Change folderName to folder where scanned documents are located before running getfolderid
-var folderName = 'FLO Reserves'
+var folderName = ' '
 
 // GET ID OF FOLDER CONTAINING RESERVES
 function getfolderid() { //get ID of folder by name 
