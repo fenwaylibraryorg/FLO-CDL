@@ -631,7 +631,7 @@ function FileUnshare() {
  // LIST FILES AND FOLDERS AND PUSH TO SPREADSHEET
   //UPDATE 8-11-23
   function listFilesAndFolders() {
-    shTestReserves.clear();
+    shReserves.clear();
         
     try {
       var parentFolder =DriveApp.getFolderById(folderOfScans);
@@ -640,9 +640,9 @@ function FileUnshare() {
     } catch (e) {
       Logger.log(e.toString());
     }
-    shTestReserves.sort(2).sort(1);
-    shTestReserves.insertRowBefore(1)
-    shTestReserves.getRange(1,1,1,7).setValues([["folder", "name", "description","ID", "URL", "size", "update"]]);
+    shReserves.sort(2).sort(1);
+    shReserves.insertRowBefore(1)
+    shReserves.getRange(1,1,1,7).setValues([["folder", "name", "description","ID", "URL", "size", "update"]]);
   }
   
   
@@ -677,10 +677,10 @@ function FileUnshare() {
       //Logger.log(data);
 
     }
-    var lastRow = shTestReserves.getLastRow();
+    var lastRow = shReserves.getLastRow();
     if(reserves_array.length > 0) {
     reserves_array.sort();
-    shTestReserves.getRange(lastRow + 1,1,reserves_array.length, reserves_array[0].length).setValues(reserves_array);
+    shReserves.getRange(lastRow + 1,1,reserves_array.length, reserves_array[0].length).setValues(reserves_array);
   }
   
   }
