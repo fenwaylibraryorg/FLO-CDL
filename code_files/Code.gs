@@ -15,19 +15,19 @@ function getfolderid() { //get ID of folder by name
 
 // Change FolderID to where scanned documents are located
 //   which can be found by selecting "getfolderid" above and click Run
-var folderOfScans = '18k3iEhXkS49tcKXWUqi_Fql1fzfwQZzf'; 
+var folderOfScans = ' '; 
 
 // DEFAULT LOAN LENGTH DEFAULT IN MINUTES
 var loanDefault = 120; 
 
 // URL FOR REQUESTING RESERVES: this is the Web App URL (Deployment URL)
-var formURL = 'https://script.google.com/a/macros/hcc.edu/s/AKfycbxFPjfiDHGE5MGLhUiXKuRHnLy1-l55kp5oz6qO14Ai_wpJ16FrSIBe7SaPYQ-dLEE7-w/exec';
+var formURL = ' ';
 
 // SET DOMAIN OF COLLEGE E-MAIL ADDRESSES TO RESTRICT TO ONLY THESE USERS
 //   Not needed if this script is deployed with limit of access only to your domain.
 //   However, this is useful for informing students who are not logged in that they need to be.
 //   Leave blank to disable this limit (blank= '')
-var limitToDomain = 'flo.org';
+var limitToDomain = ' ';
 
 // NAME OF SHEET CONTAINING LIST OF ITEMS ON E-RESERVE
 //    No change needed unless the sheet is renamed
@@ -195,7 +195,7 @@ function doPost(e) {
       htmlOutput.new_table ='';
       htmlOutput.course = course;
       //CUSTOM MESSAGE OPTION
-      var incorrect_barcode_message = 'The item with barcode '+barcode+' is not available. Please select the reserve item from the menu above.';
+      var incorrect_barcode_message = 'The item with barcode '+barcode+' is not available. Please select the reserve item from the menu below.';
       htmlOutput.message = incorrect_barcode_message;
       return htmlOutput.evaluate();
     }
@@ -541,7 +541,7 @@ function FileShare(email, item_id, loan_status, date_expire, loanLength) {
     
     try{
       //CUSTOM MESSAGE OPTION
-      var customMessage = "This PDF loan will expire in "+loanLength+". Please re-request this title if you need more time. To return this item early, please visit: https://script.google.com/a/macros/flo.org/s/AKfycbw0sjqHFCHOjuZvWhN8pg17HSBlxh-jCqas3eJjYMWBvauLDOcRtnjjkV-I8IKOhUhB2A/exec?returnearly=true";  // Please set the custom message here.
+      var customMessage = "This PDF loan will expire in "+loanLength+". Please re-request this title if you need more time. To return this item early, please visit: ";  // Please set the custom message here.
       var resource = {role: "reader", type: "user", value: email};
       Drive.Permissions.insert(resource, item_id, {emailMessage: customMessage});
       }
@@ -570,7 +570,7 @@ function FileShare(email, item_id, loan_status, date_expire, loanLength) {
       date_expire.setMinutes(date_expire.getMinutes() + 5);
       var dateExpireClean = Utilities.formatDate(date_expire, "America/New_York", "hh:mm a");
       //CUSTOM MESSAGE OPTION
-      MailApp.sendEmail(email,'Requested Reserve Item Unavailable','The reserve item you requested is currently checked out and will next be available at ' + dateExpireClean + '. To re-request this item please return to our e-reserves request form: https://script.google.com/a/macros/northshore.edu/s/AKfycbxNGJhMs-RIVybIuz0y5sDbRMw9jDwXqM794JB6HHFUc1iyKRic1gh17AWpLWc73CvjBw/exec'); 
+      MailApp.sendEmail(email,'Requested Reserve Item Unavailable','The reserve item you requested is currently checked out and will next be available at ' + dateExpireClean + '. To re-request this item please return to our e-reserves request form: '); 
       
   
     }
